@@ -28,9 +28,6 @@ PhoneBookManager::PhoneBookManager(QWidget* parent) :
 
     // Initialize connections
     this->initConnections();
-
-    // Load example fields
-    this->importFile("Zalupa");
 }
 
 PhoneBookManager::~PhoneBookManager()
