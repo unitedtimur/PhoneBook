@@ -32,6 +32,8 @@ private:
     void writeSettings();
     void readSettings();
 
+    Q_SLOT void testData();
+
 private:
     Ui::PhoneBookManager *ui;
     AddressModel* addressModel;

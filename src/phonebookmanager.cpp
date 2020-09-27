@@ -28,6 +28,9 @@ PhoneBookManager::PhoneBookManager(QWidget* parent) :
 
     // Initialize connections
     this->initConnections();
+
+    // For tests
+    this->testData();
 }
 
 PhoneBookManager::~PhoneBookManager()
@@ -69,6 +72,7 @@ void PhoneBookManager::initConnections()
     connect(this->ui->remButton, &QPushButton::clicked, this, &PhoneBookManager::remEntry);
     connect(this->ui->editButton, &QPushButton::clicked, this, &PhoneBookManager::editEntry);
     connect(this->ui->searchLineEdit, &QLineEdit::textChanged, this, &PhoneBookManager::searchEntry);
+    connect(this->ui->resetButton, &QPushButton::clicked, this, &PhoneBookManager::testData);
 }
 
 void PhoneBookManager::addEntry()
@@ -184,4 +188,27 @@ void PhoneBookManager::readSettings()
     this->resize(settings.value("size", QSize(600, 600)).toSize());
     this->move(settings.value("pos", QPoint(600, 600)).toPoint());
     settings.endGroup();
+}
+
+void PhoneBookManager::testData()
+{
+    const auto addContact = [&](const QString& fullname, const QString& email, const QString& birthday, const QString& dateentry)
+    {
+        this->addressModel->appendContact(fullname,
+                                          email,
+                                          QDate::fromString(birthday, config::DATE_FRMT),
+                                          QDate::fromString(dateentry, config::DATE_FRMT)
+        );
+    };
+
+    addContact("Альбертов А.К.", "alb@work.ru", "11.05.1960", "27.09.2020");
+    addContact("Вазгенов Б.С.", "basgen@aha.com", "11.11.2011", "15.04.1999");
+    addContact("Лихоманов Т.Д.", "lihomanov.t@inbox.ru", "17.12.1998", "27.09.2020");
+    addContact("Кумириджон А.С.", "kumir@tadj.ik", "05.05.2005", "13.04.2013");
+    addContact("Ингус Р.Р.", "ingus@com.ru", "13.01.1950", "11.11.2011");
+    addContact("Иванов И.И.", "ivan@ivan.ru", "04.07.2009", "03.07.2000");
+    addContact("Киреев В.П.", "kir@mail.ru", "04.05.1997", "03.02.2020");
+    addContact("Тестов Т.Т.", "test@test.com", "01.08.1992", "01.05.2000");
+    addContact("Провкин В.З.", "azaza@prov.com", "03.03.1994", "25.12.2019");
+    addContact("Твардов И.Г.", "tvard@ya.ru", "01.02.1988", "04.04.2020");
 }

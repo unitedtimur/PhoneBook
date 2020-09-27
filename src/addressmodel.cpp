@@ -137,6 +137,9 @@ bool AddressModel::setData(const QModelIndex &index, const QVariant &value, int 
 
 bool AddressModel::appendContact(const QString &fullname, const QString &email, const QDate &birthday, const QDate& dateentry)
 {
+    if (fullname.isEmpty() || email.isEmpty() || !birthday.isValid())
+        return false;
+
     Contact contact;
     {
         contact.fullname = fullname;
