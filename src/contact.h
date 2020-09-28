@@ -20,15 +20,4 @@ struct Contact
 
 };
 
-inline QDataStream &operator<<(QDataStream&stream, const Contact& contact)
-{
-    return stream << contact.fullname << contact.email << contact.birthday << contact.dateEntry;
-}
-
-inline QDataStream &operator>>(QDataStream& stream, Contact& contact)
-{
-    return stream >> contact.fullname >> contact.email >> contact.birthday >> contact.dateEntry;
-}
-
-
 #endif // CONTACT_H
