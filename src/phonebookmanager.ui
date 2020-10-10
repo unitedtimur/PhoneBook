@@ -75,7 +75,7 @@
       <item>
        <widget class="QLineEdit" name="fullname">
         <property name="text">
-         <string>Иванов И.И.</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -89,7 +89,7 @@
       <item>
        <widget class="QLineEdit" name="email">
         <property name="text">
-         <string>ivan@work.ru</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -103,7 +103,7 @@
       <item>
        <widget class="QLineEdit" name="birthday">
         <property name="text">
-         <string>27.04.1978</string>
+         <string/>
         </property>
        </widget>
       </item>

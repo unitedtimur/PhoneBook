@@ -13,7 +13,7 @@
 PhoneBookManager::PhoneBookManager(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::PhoneBookManager),
-    addressModel(new AddressModel())
+    m_addressModel(new AddressModel())
 {
     ui->setupUi(this);
 
@@ -51,8 +51,10 @@ void PhoneBookManager::init()
 void PhoneBookManager::setup()
 {
     QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
-    proxyModel->setSourceModel(addressModel);
-    proxyModel->setFilterKeyColumn(0);
+    proxyModel->setSourceModel(m_addressModel.get());
+
+    // For filtering by all columns
+    proxyModel->setFilterKeyColumn(-1);
 
     this->ui->tableView->setModel(proxyModel);
     this->ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -73,7 +75,7 @@ void PhoneBookManager::initConnections()
 
 void PhoneBookManager::addEntry()
 {
-    if (!this->addressModel->appendContact(ui->fullname->text(),
+    if (!m_addressModel->appendContact(ui->fullname->text(),
                                       ui->email->text(),
                                       QDate::fromString(ui->birthday->text(), config::DATE_FRMT),
                                       QDate::currentDate()))
@@ -92,7 +94,7 @@ void PhoneBookManager::remEntry()
     for (QModelIndex index : indexes)
     {
         int row = proxy->mapToSource(index).row();
-        this->addressModel->removeRows(row, 1, QModelIndex());
+        m_addressModel->removeRows(row, 1, QModelIndex());
     }
 }
 
@@ -103,6 +105,9 @@ void PhoneBookManager::editEntry()
 
     const QModelIndexList indexes = selectionModel->selectedRows();
 
+    if (indexes.empty())
+        return;
+
     QString fullname;
     QString email;
     QDate birthday;
@@ -110,27 +115,24 @@ void PhoneBookManager::editEntry()
 
     int row = -1;
 
-    if (indexes.empty())
-        return;
-
     for (const auto& index : indexes)
     {
         row = proxy->mapToSource(index).row();
 
-        QModelIndex fullnameIndex = this->addressModel->index(row, 1, QModelIndex());
-        QVariant varFullname = this->addressModel->data(fullnameIndex, Qt::DisplayRole);
+        QModelIndex fullnameIndex = this->m_addressModel->index(row, 1, QModelIndex());
+        QVariant varFullname = this->m_addressModel->data(fullnameIndex, Qt::DisplayRole);
         fullname = varFullname.toString();
 
-        QModelIndex emailIndex = this->addressModel->index(row, 2, QModelIndex());
-        QVariant varEmail = this->addressModel->data(emailIndex, Qt::DisplayRole);
+        QModelIndex emailIndex = this->m_addressModel->index(row, 2, QModelIndex());
+        QVariant varEmail = this->m_addressModel->data(emailIndex, Qt::DisplayRole);
         email = varEmail.toString();
 
-        QModelIndex birthdayIndex = this->addressModel->index(row, 3, QModelIndex());
-        QVariant varBirthday = this->addressModel->data(birthdayIndex, Qt::DisplayRole);
+        QModelIndex birthdayIndex = this->m_addressModel->index(row, 3, QModelIndex());
+        QVariant varBirthday = this->m_addressModel->data(birthdayIndex, Qt::DisplayRole);
         birthday = varBirthday.toDate();
 
-        QModelIndex dateentryIndex = this->addressModel->index(row, 4, QModelIndex());
-        QVariant varDateentry = this->addressModel->data(dateentryIndex, Qt::DisplayRole);
+        QModelIndex dateentryIndex = this->m_addressModel->index(row, 4, QModelIndex());
+        QVariant varDateentry = this->m_addressModel->data(dateentryIndex, Qt::DisplayRole);
         dateentry = varDateentry.toDate();
     }
 
@@ -144,17 +146,17 @@ void PhoneBookManager::editEntry()
 
         if (newFullname != fullname || newEmail != email || newBirthday != birthday)
         {
-            const QModelIndex newFullnameIndex = this->addressModel->index(row, 1, QModelIndex());
-            this->addressModel->setData(newFullnameIndex, newFullname, Qt::EditRole);
+            const QModelIndex newFullnameIndex = this->m_addressModel->index(row, 1, QModelIndex());
+            this->m_addressModel->setData(newFullnameIndex, newFullname, Qt::EditRole);
 
-            const QModelIndex newEmailIndex = this->addressModel->index(row, 2, QModelIndex());
-            this->addressModel->setData(newEmailIndex, newEmail, Qt::EditRole);
+            const QModelIndex newEmailIndex = this->m_addressModel->index(row, 2, QModelIndex());
+            this->m_addressModel->setData(newEmailIndex, newEmail, Qt::EditRole);
 
-            const QModelIndex newBirthdayIndex = this->addressModel->index(row, 3, QModelIndex());
-            this->addressModel->setData(newBirthdayIndex, newBirthday, Qt::EditRole);
+            const QModelIndex newBirthdayIndex = this->m_addressModel->index(row, 3, QModelIndex());
+            this->m_addressModel->setData(newBirthdayIndex, newBirthday, Qt::EditRole);
 
-            const QModelIndex newDateEntry = this->addressModel->index(row, 4, QModelIndex());
-            this->addressModel->setData(newDateEntry, QDate::currentDate(), Qt::EditRole);
+            const QModelIndex newDateEntry = this->m_addressModel->index(row, 4, QModelIndex());
+            this->m_addressModel->setData(newDateEntry, QDate::currentDate(), Qt::EditRole);
         }
     }
 }
@@ -163,12 +165,11 @@ void PhoneBookManager::searchEntry(const QString& text)
 {
     QSortFilterProxyModel* proxy = static_cast<QSortFilterProxyModel*>(this->ui->tableView->model());
     proxy->setFilterRegExp(QRegExp(text, Qt::CaseInsensitive, QRegExp::FixedString));
-    proxy->setFilterKeyColumn(1);
 }
 
 void PhoneBookManager::writeSettings()
 {
-    QSettings settings(config::ORGANIZATION, config::APPLICATION);
+    QSettings settings;
 
     settings.beginGroup("PhoneBook");
     settings.setValue("size", this->size());
@@ -178,7 +179,7 @@ void PhoneBookManager::writeSettings()
 
 void PhoneBookManager::readSettings()
 {
-    QSettings settings(config::ORGANIZATION, config::APPLICATION);
+    QSettings settings;
 
     settings.beginGroup("PhoneBook");
     this->resize(settings.value("size", QSize(600, 600)).toSize());

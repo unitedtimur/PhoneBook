@@ -2,6 +2,7 @@
 #define PHONEBOOKMANAGER_H
 
 #include <QMainWindow>
+#include <QSharedPointer>
 
 class AddressModel;
 
@@ -34,7 +35,7 @@ private:
 
 private:
     Ui::PhoneBookManager *ui;
-    AddressModel* addressModel;
+    QSharedPointer<AddressModel> m_addressModel;
 };
 
 #endif // PHONEBOOKMANAGER_H
